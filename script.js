@@ -27,8 +27,8 @@ const downloadLinks = {
     3: "https://drive.google.com/file/d/1OEF2vsYF9zmuDiK9tQ_5thPZZPSWd79n/view?usp=drivesdk",
     4: "https://drive.google.com/file/d/12jtzyxGTGzgG3U22vsA_M-y2Oj9i5vPt/view?usp=drivesdk",
     5: "https://drive.google.com/file/d/1YlaoFZJk2dfZOPWXtEMgsODtbW_UJAbn/view?usp=drivesdk",
-    6 "https://drive.google.com/file/d/1R0zwOhfzO_UiN4VXTudMdeJOwHfR0Mnc/view?usp=drivesdk",
-    7 "https://drive.google.com/file/d/1gVPnYVGreHp9dJWO-uXqUzFa_aN_c3fM/view?usp=drivesdk"
+    6: "https://drive.google.com/file/d/1R0zwOhfzO_UiN4VXTudMdeJOwHfR0Mnc/view?usp=drivesdk",
+    7: "https://drive.google.com/file/d/1gVPnYVGreHp9dJWO-uXqUzFa_aN_c3fM/view?usp=drivesdk"
 };
 
 const DEFAULT_IMAGE = "2.jpg";
