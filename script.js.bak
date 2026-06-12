@@ -1,0 +1,132 @@
+// =========================================================================
+// НАСТРОЙКА ЦИТАТ ГРИФФИТА
+// Укажи здесь ОБЩЕЕ количество файлов цитат (например, если есть от 1.txt до 4.txt)
+// =========================================================================
+const TOTAL_QUOTES = 4; 
+
+// Какая картинка какому номеру цитаты принадлежит
+const quoteImages = {
+    1: "1.jpg",
+    2: "2.jpg",
+    3: "3.jpg",
+    4: "4.jpg",
+    5: "5.jpg",
+};
+
+const DEFAULT_IMAGE = "2.jpg";
+const quotesGrid = document.getElementById('quotes-grid');
+
+// Глобальная переменная для отслеживания текущего играющего аудио
+let currentAudio = null;
+let currentButton = null;
+
+async function loadQuote(id) {
+    try {
+        // Получаем текст
+        const textResponse = await fetch(`Griffith/quotes/${id}.txt`);
+        if (!textResponse.ok) return null;
+        const text = await textResponse.text();
+
+        // Находим картинку
+        const imageName = quoteImages[id] || DEFAULT_IMAGE;
+        const imagePath = `Griffith/images/${imageName}`;
+
+        // Проверяем аудио (.mp3)
+        const audioPath = `Griffith/quotes/${id}.mp3`;
+        let hasAudio = false;
+        
+        const audioResponse = await fetch(audioPath, { method: 'HEAD' });
+        if (audioResponse.ok) {
+            hasAudio = true;
+        }
+
+        return { id, text, imagePath, audioPath, hasAudio };
+    } catch (error) {
+        return null;
+    }
+}
+
+async function renderQuotes() {
+    if (!quotesGrid) return;
+    quotesGrid.innerHTML = '';
+
+    // Выводим цитаты сверху вниз (от новых к старым)
+    for (let i = TOTAL_QUOTES; i >= 1; i--) {
+        const quote = await loadQuote(i);
+        if (!quote) continue;
+
+        const card = document.createElement('div');
+        card.className = 'quote-card';
+
+        // Создаем ячейку для кнопки племени, если mp3 существует
+        let audioCellHTML = '';
+        if (quote.hasAudio) {
+            audioCellHTML = `
+                <div class="quote-audio-cell">
+                    <button class="play-btn" data-audio="Griffith/quotes/${quote.id}.mp3" title="Слушать озвучку"></button>
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            <div class="quote-layout">
+                <div class="quote-img-cell">
+                    <img src="${quote.imagePath}" class="quote-card-img" alt="Griffith">
+                </div>
+                <div class="quote-content-cell">
+                    <p class="quote-text">“${quote.text.trim()}”</p>
+                </div>
+                ${audioCellHTML}
+            </div>
+        `;
+
+        quotesGrid.appendChild(card);
+    }
+
+    // Вешаем логику клика на все созданные кнопки "Play"
+    setupAudioLogic();
+}
+
+function setupAudioLogic() {
+    const playButtons = document.querySelectorAll('.play-btn');
+
+    playButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const audioSrc = this.getAttribute('data-audio');
+
+            // Если кликнули по уже играющей кнопке — ставим на паузу
+            if (currentAudio && currentButton === this) {
+                if (!currentAudio.paused) {
+                    currentAudio.pause();
+                    this.classList.remove('playing');
+                } else {
+                    currentAudio.play();
+                    this.classList.add('playing');
+                }
+                return;
+            }
+
+            // Если включили другой трек, а старый играл — выключаем прошлый трек
+            if (currentAudio) {
+                currentAudio.pause();
+                if (currentButton) currentButton.classList.remove('playing');
+            }
+
+            // Запускаем новое аудио
+            currentAudio = new Audio(audioSrc);
+            currentButton = this;
+            
+            currentAudio.play();
+            this.classList.add('playing');
+
+            // Когда аудио доиграет до конца, убираем статус паузы с кнопки
+            currentAudio.addEventListener('ended', () => {
+                this.classList.remove('playing');
+                currentAudio = null;
+                currentButton = null;
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', renderQuotes);
